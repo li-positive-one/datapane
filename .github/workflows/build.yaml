@@ -1,0 +1,46 @@
+name: CI
+on: pull_request
+
+jobs:
+  ci:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        poetry-version: ["1.7.1",]
+        node-version: ['16.x']
+        os: [ubuntu-22.04,]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run image
+        uses: abatilo/actions-poetry@v2
+        with:
+          poetry-version: ${{ matrix.poetry-version }}
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: node install deps
+        run: |
+          cd web-components
+          npm clean-install
+      - name: node build
+        run: |
+          cd web-components
+          npm run build
+      - name: python-build
+        run: |
+          cd python-client
+          poetry build
+      - name: install-pytest-depends
+        run: |
+          cd python-client
+          poetry install --with dev --all-extras
+      - name: pytest
+        run: |
+          cd python-client
+          poetry run pytest tests
