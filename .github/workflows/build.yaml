@@ -26,7 +26,7 @@ jobs:
       - name: install-test-depends
         run: |
           cd python-client
-          poetry install --with dev
+          poetry install --with dev --all-extras
       - name: test
         run: |
           cd python-client
